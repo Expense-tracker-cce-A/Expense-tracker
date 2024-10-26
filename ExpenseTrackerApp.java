@@ -24,15 +24,20 @@ public class ExpenseTrackerApp extends Application {
         primaryStage.setTitle("Expense Tracker");
 
         VBox layout = new VBox(10);
+        Label descriptionLabel = new Label("Description:");
         TextField descriptionField = new TextField();
-        descriptionField.setPromptText("Description");
+        descriptionField.setPromptText("Enter Description");
+        Label amountLabel = new Label("Amount:");
         TextField amountField = new TextField();
-        amountField.setPromptText("Amount");
+        amountField.setPromptText("Enter Amount");
         ComboBox<ExpenseCategory> categoryComboBox = new ComboBox<>();
         categoryComboBox.getItems().addAll(ExpenseCategory.values());
         Button addButton = new Button("Add Expense");
         Button saveButton = new Button("Save to File");
         Button loadButton = new Button("Load from File");
+        Button totalButton = new Button("Show Total Expenses");
+        Button categoryTotalButton = new Button("Show Category Total");
+        Label totalLabel = new Label("Total Expenses: 0.00");
         TextArea expenseListArea = new TextArea();
         expenseListArea.setEditable(false);
 
@@ -49,12 +54,21 @@ public class ExpenseTrackerApp extends Application {
                 showAlert("Invalid Input", "Please enter a valid amount.");
             }
         });
-
+                totalButton.setOnAction(e -> updateTotalLabel(totalLabel));
+                categoryTotalButton.setOnAction(e -> {
+                ExpenseCategory category = categoryComboBox.getValue();
+                if (category != null) {
+                    double categoryTotal = tracker.getTotalByCategory(category);
+        showAlert("Category Total", "Total for " + category + ": " + String.format("%.2f", categoryTotal));
+    } else {
+        showAlert("No Category Selected", "Please select a category to view the total.");
+    }
+});
         saveButton.setOnAction(e -> saveToFile("expenses.csv"));
         loadButton.setOnAction(e -> loadFromFile("expenses.csv", expenseListArea));
 
-        layout.getChildren().addAll(descriptionField, amountField, categoryComboBox, addButton, saveButton, loadButton, expenseListArea);
-        Scene scene = new Scene(layout, 400, 400);
+        layout.getChildren().addAll(descriptionLabel,descriptionField,amountLabel, amountField, categoryComboBox, addButton, saveButton, loadButton,totalButton,categoryTotalButton,totalLabel, expenseListArea);
+        Scene scene = new Scene(layout, 600, 600);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
@@ -64,7 +78,11 @@ public class ExpenseTrackerApp extends Application {
                 .map(Expense::toString)
                 .collect(Collectors.joining("\n")));
     }
-
+    
+    private void updateTotalLabel(Label totalLabel) {
+    double totalExpenses = tracker.getTotalExpenses();
+    totalLabel.setText("Total Expenses: " + String.format("%.2f", totalExpenses));
+}
     private void clearInputFields(TextField descriptionField, TextField amountField, ComboBox<ExpenseCategory> categoryComboBox) {
         descriptionField.clear();
         amountField.clear();
@@ -167,10 +185,11 @@ public class ExpenseTrackerApp extends Application {
             return expenses.stream().mapToDouble(Expense::getAmount).sum();
         }
 
-        public List<Expense> getExpensesByCategory(ExpenseCategory category) {
+        public double getTotalByCategory(ExpenseCategory category) {
             return expenses.stream()
                     .filter(expense -> expense.getCategory() == category)
-                    .collect(Collectors.toList());
+                    .mapToDouble(Expense::getAmount) 
+                    .sum();
         }
 
         public void clearExpenses() {
