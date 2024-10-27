@@ -3,6 +3,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import javafx.geometry.Insets;
 
 import java.io.*;
 import java.time.LocalDate;
@@ -24,6 +25,8 @@ public class ExpenseTrackerApp extends Application {
         primaryStage.setTitle("Expense Tracker"); // Set the title of the window
         // Set up the main layout and form components
         VBox layout = new VBox(10); // Vertical layout with 10px spacing
+        layout.setPadding(new Insets(20)); // Adds 20px padding around the entire VBox layout
+
         // Labels and input fields for expense description and amount
         Label descriptionLabel = new Label("Description:");
         TextField descriptionField = new TextField();
